@@ -5,8 +5,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import PropTypes from 'prop-types'
 
 import { handleLoginApi,handleRegistrationApi } from './api';
+
 
 export default function LoginModal( {
     modalOpen = false, 
@@ -24,8 +26,10 @@ export default function LoginModal( {
         email:""
     })
 
-    console.log(formValue)
 
+const handleUserLogin = (username) => {
+localStorage.setItem('username',username)
+}
   return (
     <React.Fragment>
       
@@ -36,15 +40,18 @@ export default function LoginModal( {
         }}
         PaperProps={{
           component: 'form',
-          onSubmit: (event) => {
+          onSubmit: async (event) => {
             event.preventDefault();
 
             if(type === "login") {
-              handleLoginApi(formValue)
+       const response= await handleLoginApi(formValue)
+       console.log(response.data,'response')
+       if(response.data) handleUserLogin(response.data)
             } else {
-              handleRegistrationApi(formValue)
-            }
-            
+              const response= await handleRegistrationApi(formValue)
+              console.log(response.data,'response')   
+             {/* if(response.data) handleUserLogin(response.data)*/} 
+            }      
             setModalOpen(false)
           },
         }}
@@ -173,3 +180,9 @@ export default function LoginModal( {
     </React.Fragment>
   );
 }
+
+LoginModal.propTypes = {
+  modalOpen: PropTypes.bool, // Prop type for modalOpen
+  setModalOpen: PropTypes.func, // Prop type for setModalOpen
+  type: PropTypes.string, // Prop type for type
+};

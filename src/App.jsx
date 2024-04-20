@@ -1,17 +1,18 @@
 
-import LoginModal from "./component/LoginModal";
-import NavBar from "./component/NavBar";
-
 import { Grid } from "@mui/material";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./component/HomePage";
 
 function App() {
   return (
     <Grid container>
-      <NavBar />
-
-    <LoginModal/>
-      </Grid>
-  
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={< HomePage/>} />
+          {/* Add other routes here */}
+        </Routes>
+      </BrowserRouter>
+    </Grid>
   );
 }
 
