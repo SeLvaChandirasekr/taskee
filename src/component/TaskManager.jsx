@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Card, Button, Typography, TextField, Box, Grid, Backdrop } from "@mui/material";
+import { Modal, Card, Button, Typography, TextField, Box, Grid } from "@mui/material";
 import PropTypes from 'prop-types';
 import { handleSubmittedTaskApi } from './api';
 
@@ -13,6 +13,8 @@ const TaskManager = ({ username }) => {
     deadline: "",
   });
   const [editingIndex, setEditingIndex] = useState(null);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleOpen = () => {
     setOpen(true);
@@ -27,9 +29,19 @@ const TaskManager = ({ username }) => {
       priority: "",
       deadline: "",
     });
+    setError("");
+  };
+
+  const validateTaskData = () => {
+    const { heading, description, priority, deadline } = taskData;
+    return heading && description && priority && deadline;
   };
 
   const handleSubmit = () => {
+    if (!validateTaskData()) {
+      setError("All fields are required");
+      return;
+    }
     if (editingIndex !== null) {
       const updatedTasks = [...tasks];
       updatedTasks[editingIndex] = taskData;
@@ -68,17 +80,43 @@ const TaskManager = ({ username }) => {
     setTasks(updatedTasks);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredTasks = tasks.filter(task =>
+    task.heading.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.priority.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.deadline.includes(searchQuery)
+  );
+
   return (
     <div>
       {username && (
-        <Button onClick={handleOpen} variant="contained" color="primary">
-          Add Task
-        </Button>
+        <>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Search by Task Heading"
+            placeholder="Search by Task Heading"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          <Button onClick={handleOpen} variant="contained" color="primary">
+            Add Task
+          </Button>
+        </>
       )}
 
-      <Modal open={open} onClose={handleClose} BackdropComponent={Backdrop} BackdropProps={{ style: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}>
+      <Modal 
+        open={open} 
+        onClose={handleClose} 
+        BackdropProps={{ style: { backgroundColor: 'transparent' } }}
+      >
         <Box sx={{ position: "center", backgroundColor: "white", p: 4, borderRadius: 4, maxWidth: 400, margin: "auto" }}>
           <Typography variant="h5" gutterBottom>{editingIndex !== null ? "Edit Task" : "Add Task"}</Typography>
+          {error && <Typography color="error" variant="body2">{error}</Typography>}
           <TextField
             fullWidth
             margin="normal"
@@ -103,7 +141,7 @@ const TaskManager = ({ username }) => {
           <TextField
             fullWidth
             margin="normal"
-            label=""
+            label="Deadline"
             type="date"
             value={taskData.deadline}
             onChange={(e) => setTaskData({ ...taskData, deadline: e.target.value })}
@@ -112,7 +150,7 @@ const TaskManager = ({ username }) => {
         </Box>
       </Modal>
       <Grid container spacing={2} style={{ marginTop: '20px' }}>
-        {tasks.map((task, index) => (
+        {filteredTasks.map((task, index) => (
           <Grid key={index} item xs={12} sm={6} md={3}>
             <Card style={{ backgroundColor: task.completed ? "lightgreen" : "#ffeb3b", height: "100%", minHeight: "200px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
